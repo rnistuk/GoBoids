@@ -12,11 +12,8 @@ func (v Vector) Magnitude() float64 {
 }
 
 func (v Vector) Unit() Vector {
-	n := v.Magnitude()
-	return Vector{
-		X: v.X / n,
-		Y: v.Y / n,
-	}
+	// TODO Guard against 0 magnitude
+	return v.Multiply(1.0 / v.Magnitude())
 }
 
 func (v Vector) Add(a Vector) Vector {
@@ -41,5 +38,5 @@ func (v Vector) Multiply(m float64) Vector {
 }
 
 func Distance(a Vector, b Vector) float64 {
-	return b.Add(a.Multiply(-1.0)).Magnitude()
+	return b.Subtract(a).Magnitude()
 }

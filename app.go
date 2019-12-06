@@ -8,21 +8,24 @@ import (
 )
 
 const (
-	NBoids       = src.NBoids
 	ScreenWidth  = 800
 	ScreenHeight = 800
 )
 
-func initializeBoids(b *[NBoids]src.Boid) {
-	for i := range b {
-		b[i].Position = src.Vector{
-			X: float64(rand.Uint32() % ScreenWidth),
-			Y: float64(rand.Uint32() % ScreenHeight),
-		}
+func initializeBoids(b *[]src.Boid, nBoids int) {
+	for i := 0; i < nBoids; i++ {
+		*b = append(*b, src.Boid{
+			Position: src.Vector{
+				X: float64(rand.Uint32() % ScreenWidth),
+				Y: float64(rand.Uint32() % ScreenHeight),
+			},
+			Velocity: src.Vector{},
+		})
 	}
 }
 
 func main() {
+	nBoids := 30
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		fmt.Println("Initializing SDL:", err)
 		return
@@ -43,9 +46,9 @@ func main() {
 	}
 	defer renderer.Destroy()
 
-	var boids [NBoids]src.Boid
+	var boids []src.Boid
 
-	initializeBoids(&boids)
+	initializeBoids(&boids, nBoids)
 
 	running := true
 	for running {
@@ -56,7 +59,7 @@ func main() {
 
 		renderer.Present()
 
-		update_boids(&boids)
+		boids = update_boids(boids)
 
 		sdl.Delay(100)
 
@@ -81,23 +84,25 @@ func handleEvents(running *bool) {
 	}
 }
 
-func update_boids(boids *[NBoids]src.Boid) {
-	for i := range boids {
+func update_boids(boids []src.Boid) []src.Boid {
+	var nextBoids []src.Boid
+	nBoids := len(boids)
+	for i := 0; i < nBoids; i++ {
+		nextBoid := boids[i]
 		// TODO Learn how to implement the strategy pattern in Go
-		v1 := src.Rule01(i, *boids)
-		v2 := src.Rule02(i, *boids)
-		v3 := src.Rule03(i, *boids)
-		v4 := src.Rule04(i, *boids)
-		v5 := src.Rule05(i, *boids)
+		nextBoid.Velocity = nextBoid.Velocity.Add(src.Rule01(i, boids))
+		nextBoid.Velocity = nextBoid.Velocity.Add(src.Rule02(i, boids))
+		nextBoid.Velocity = nextBoid.Velocity.Add(src.Rule03(i, boids))
+		nextBoid.Velocity = nextBoid.Velocity.Add(src.Rule04(i, boids))
+		nextBoid.Velocity = nextBoid.Velocity.Add(src.Rule05(i, boids))
 
-		boids[i].Velocity.X += v1.X + v2.X + v3.X + v4.X + v5.X
-		boids[i].Velocity.Y += v1.Y + v2.Y + v3.Y + v4.Y + v5.Y
-		boids[i].Position.X += boids[i].Velocity.X
-		boids[i].Position.Y += boids[i].Velocity.Y
+		nextBoid.Position = nextBoid.Position.Add(nextBoid.Velocity)
+		nextBoids = append(nextBoids, nextBoid)
 	}
+	return nextBoids
 }
 
-func draw_boids(renderer *sdl.Renderer, boids [NBoids]src.Boid) {
+func draw_boids(renderer *sdl.Renderer, boids []src.Boid) {
 	for i := range boids {
 		boids[i].Draw(renderer, ScreenWidth, ScreenHeight)
 	}

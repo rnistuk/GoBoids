@@ -1,25 +1,20 @@
 package src
 
-const NBoids = 100
-
-func Rule01(j int, b [NBoids]Boid) Vector {
-	var pos Vector
+func centreOfMass(b []Boid) Vector {
+	centre := Vector{}
 	for i := range b {
-		if i != j {
-			pos.X = pos.X + b[i].Position.X
-			pos.Y = pos.Y + b[i].Position.Y
-		}
+		centre = centre.Add(b[i].Position)
 	}
-	pos.X = pos.X / 9
-	pos.Y = pos.Y / 9
-
-	var v Vector
-	v.X = (pos.X - b[j].Position.X) / 100.0
-	v.Y = (pos.Y - b[j].Position.Y) / 100.0
-	return Vector{}
+	return centre.Multiply(1.0 / float64(len(b)))
 }
 
-func Rule02(j int, b [NBoids]Boid) Vector {
+func Rule01(j int, b []Boid) Vector {
+	// fly to the center of mass
+	return centreOfMass(b).Subtract(b[j].Position).Multiply(1.0 / 100.0)
+}
+
+func Rule02(j int, b []Boid) Vector {
+	// keep a minimum distance between boids
 	var c Vector
 	for i := range b {
 		if i != j {
@@ -32,36 +27,28 @@ func Rule02(j int, b [NBoids]Boid) Vector {
 	return c
 }
 
-func Rule03(j int, b [NBoids]Boid) Vector {
+func Rule03(j int, b []Boid) Vector {
 	var pvj Vector
 	for i := range b {
 		if i != j {
-			pvj.X += b[i].Velocity.X
-			pvj.Y += b[i].Velocity.Y
+			pvj = pvj.Add(b[i].Velocity)
 		}
 	}
+	pvj = pvj.Multiply(1.0 / float64(len(b)-1))
 
-	pvj.X /= NBoids - 1
-	pvj.Y /= NBoids - 1
-
-	pvj.X = (pvj.X - b[j].Velocity.X) / 4
-	pvj.Y = (pvj.Y - b[j].Velocity.Y) / 4
-	return pvj
+	return pvj.Subtract(b[j].Velocity).Multiply(0.25)
 }
 
-func Rule04(j int, b [NBoids]Boid) Vector {
+func Rule04(j int, b []Boid) Vector {
 	place := Vector{300, 300}
-	return Vector{(place.X - b[j].Position.X) / 100.0, (place.Y - b[j].Position.Y) / 100.0}
+	return place.Subtract(b[j].Position.Multiply(1.0 / 10))
 }
 
-func Rule05(j int, b [NBoids]Boid) Vector {
+func Rule05(j int, b []Boid) Vector {
 	s_max := 260.0
 	s_current := b[j].Velocity.Magnitude()
-
 	if s_current > s_max {
-		ds := s_max - s_current
-		vc := b[j].Velocity.Unit()
-		return vc.Multiply(ds)
+		return b[j].Velocity.Unit().Multiply(s_max - s_current)
 	}
 	return Vector{0.0, 0.0}
 }

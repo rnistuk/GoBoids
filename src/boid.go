@@ -16,3 +16,10 @@ func (b Boid) Draw(render *sdl.Renderer, screenWidth int32, screenHeight int32) 
 	r := sdl.Rect{screenWidth/2 + int32(b.Position.X/10.0), screenHeight/2 + int32(b.Position.Y/10.0), 5, 5}
 	_ = render.FillRect(&r)
 }
+
+func NewBoid() Boid {
+	return Boid{
+		Position: Vector{},
+		Velocity: Vector{},
+	}
+}
