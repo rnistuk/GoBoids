@@ -23,3 +23,11 @@ func NewBoid() Boid {
 		Velocity: Vector{},
 	}
 }
+
+func CentreOfFlock(b []Boid) Vector {
+	centre := Vector{}
+	for i := range b {
+		centre = centre.Add(b[i].Position)
+	}
+	return centre.Multiply(1.0 / float64(len(b)))
+}

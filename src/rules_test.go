@@ -1,7 +1,6 @@
 package src
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -12,9 +11,9 @@ func TestRule01(t *testing.T) {
 
 	boids[1].Position.X = 1.0
 
-	velocity := Rule01(1, boids)
-
-	fmt.Println(velocity.X)
-	fmt.Println(velocity.Y)
+	v := Rule01(1, boids)
+	if v.X+1.0 > smallFloat {
+		t.Error(`Two boids did not fly to com`, v.X)
+	}
 
 }

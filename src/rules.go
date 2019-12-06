@@ -1,16 +1,8 @@
 package src
 
-func centreOfMass(b []Boid) Vector {
-	centre := Vector{}
-	for i := range b {
-		centre = centre.Add(b[i].Position)
-	}
-	return centre.Multiply(1.0 / float64(len(b)))
-}
-
 func Rule01(j int, b []Boid) Vector {
 	// fly to the center of mass
-	return centreOfMass(b).Subtract(b[j].Position).Multiply(1.0 / 100.0)
+	return CentreOfFlock(b).Subtract(b[j].Position).Multiply(1.0 / 100.0)
 }
 
 func Rule02(j int, b []Boid) Vector {
