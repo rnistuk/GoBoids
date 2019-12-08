@@ -1,6 +1,9 @@
 package src
 
-import "math"
+import (
+	"fmt"
+	"math"
+)
 
 type Vector struct {
 	X float64
@@ -39,4 +42,8 @@ func (v Vector) Multiply(m float64) Vector {
 
 func Distance(a Vector, b Vector) float64 {
 	return b.Subtract(a).Magnitude()
+}
+
+func (v Vector) toString() string {
+	return fmt.Sprintf("%f, %f", v.X, v.Y)
 }

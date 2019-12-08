@@ -52,7 +52,7 @@ func main() {
 
 	running := true
 	for running {
-		renderer.SetDrawColor(128, 255, 128, 255)
+		renderer.SetDrawColor(147, 172, 207, 255)
 		renderer.Clear()
 
 		draw_boids(renderer, boids)

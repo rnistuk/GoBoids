@@ -10,9 +10,8 @@ func Rule02(j int, b []Boid) Vector {
 	var c Vector
 	for i := range b {
 		if i != j {
-			if 200 > Distance(b[j].Position, b[i].Position) {
-				c.X = c.X - (b[i].Position.X-b[j].Position.X)*0.5
-				c.Y = c.Y - (b[i].Position.Y-b[j].Position.Y)*0.5
+			if 300 > Distance(b[j].Position, b[i].Position) {
+				c = c.Subtract(b[i].Position.Subtract(b[j].Position).Multiply(0.5))
 			}
 		}
 	}
@@ -20,6 +19,7 @@ func Rule02(j int, b []Boid) Vector {
 }
 
 func Rule03(j int, b []Boid) Vector {
+	// Boids try to match velocity with near boids.
 	var pvj Vector
 	for i := range b {
 		if i != j {
@@ -32,11 +32,13 @@ func Rule03(j int, b []Boid) Vector {
 }
 
 func Rule04(j int, b []Boid) Vector {
-	place := Vector{300, 300}
+	// Tendency towards a particular place
+	place := Vector{0, 0}
 	return place.Subtract(b[j].Position.Multiply(1.0 / 10))
 }
 
 func Rule05(j int, b []Boid) Vector {
+	// Limiting the speed
 	s_max := 260.0
 	s_current := b[j].Velocity.Magnitude()
 	if s_current > s_max {

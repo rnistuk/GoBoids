@@ -6,3 +6,7 @@ Based on Conrad Parker's Boids Pseudocode found at http://www.kfish.org/boids/ps
 
 ## Install sdl2
 brew install sdl2
+
+
+# TODO
+* re-arrange the project https://martinheinz.dev/blog/5

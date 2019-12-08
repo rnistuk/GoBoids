@@ -1,6 +1,9 @@
 package src
 
-import "github.com/veandco/go-sdl2/sdl"
+import (
+	"fmt"
+	"github.com/veandco/go-sdl2/sdl"
+)
 
 type Boid struct {
 	Position Vector
@@ -30,4 +33,8 @@ func CentreOfFlock(b []Boid) Vector {
 		centre = centre.Add(b[i].Position)
 	}
 	return centre.Multiply(1.0 / float64(len(b)))
+}
+
+func (b Boid) toString() string {
+	return fmt.Sprintf("P: %s    V: %s", b.Position.toString(), b.Velocity.toString())
 }
