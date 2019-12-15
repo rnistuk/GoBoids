@@ -1,0 +1,53 @@
+
+
+/*
+func Rule01(j int, b []Element) Vector {
+	// fly to the center of mass
+	return Vector{}
+}*/
+
+/*
+func Rule02(j int, b []Element) Vector {
+	// keep a minimum distance between boids
+	var c Vector
+	for i := range b {
+		if i != j {
+			if 300 > Distance(b[j].position, b[i].position) {
+				c = c.Subtract(b[i].position.Subtract(b[j].position).Multiply(0.5))
+			}
+		}
+	}
+	return c
+}
+
+func Rule03(j int, b []Element) Vector {
+	// Boids try to match velocity with near boids.
+	var pvj Vector
+	for i := range b {
+		if i != j {
+			pvj = pvj.Add(b[i].velocity)
+		}
+	}
+	pvj = pvj.Multiply(1.0 / float64(len(b)-1))
+
+	return pvj.Subtract(b[j].velocity).Multiply(0.5)
+}
+
+func Rule04(j int, b []Element) Vector {
+	// Tendency towards a particular place
+	place := Vector{0, 0}
+	if Distance(place, b[j].position) > 10 {
+		return place.Subtract(b[j].position.Multiply(1.0 / 10))
+	}
+	return Vector{ X: 0.0, Y: 0.0,}
+}
+
+func Rule05(j int, b []Element) Vector {
+	// Limiting the speed
+	sMax := 40.0
+	sCurrent := b[j].velocity.Magnitude()
+	if sCurrent > sMax {
+		return b[j].velocity.Unit().Multiply((sMax - sCurrent)/10.0)
+	}
+	return Vector{0.0, 0.0}
+}*/

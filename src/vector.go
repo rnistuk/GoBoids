@@ -10,6 +10,14 @@ type Vector struct {
 	Y float64
 }
 
+func (b Vector) DirectionRadians() float64 {
+	return math.Atan2(b.Y, b.X)
+}
+
+func (b Vector) DirectionDegrees() float64 {
+	return b.DirectionRadians() * 180 / math.Pi
+}
+
 func (v Vector) Magnitude() float64 {
 	return math.Sqrt(v.X*v.X + v.Y*v.Y)
 }
@@ -44,6 +52,6 @@ func Distance(a Vector, b Vector) float64 {
 	return b.Subtract(a).Magnitude()
 }
 
-func (v Vector) toString() string {
+func (v Vector) ToString() string {
 	return fmt.Sprintf("%f, %f", v.X, v.Y)
 }

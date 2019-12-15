@@ -5,7 +5,9 @@ import (
 	"testing"
 )
 
-const smallFloat = 0.00001
+const (
+	smallFloat = 0.00001
+)
 
 func TestVector_Add(t *testing.T) {
 	suta := Vector{0.0, 0.0}

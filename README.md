@@ -9,4 +9,8 @@ brew install sdl2
 
 
 # TODO
-* re-arrange the project https://martinheinz.dev/blog/5
+* use component based architecture  
+https://www.youtube.com/watch?v=5Rt3dIJQEwQ&t=1376s  
+https://github.com/velovix/gaming-in-go 
+* re-arrange the project  
+https://martinheinz.dev/blog/5

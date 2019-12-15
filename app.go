@@ -5,6 +5,7 @@ import (
 	"github.com/goboids/src"
 	"github.com/veandco/go-sdl2/sdl"
 	"math/rand"
+	"time"
 )
 
 const (
@@ -12,59 +13,86 @@ const (
 	ScreenHeight = 800
 )
 
-func initializeBoids(b *[]src.Boid, nBoids int) {
-	for i := 0; i < nBoids; i++ {
-		*b = append(*b, src.Boid{
-			Position: src.Vector{
-				X: float64(rand.Uint32() % ScreenWidth),
-				Y: float64(rand.Uint32() % ScreenHeight),
-			},
-			Velocity: src.Vector{},
-		})
-	}
-}
-
-func main() {
-	nBoids := 30
+func initSDL() (*sdl.Window, *sdl.Renderer) {
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		fmt.Println("Initializing SDL:", err)
-		return
+		panic(err)
 	}
-	defer sdl.Quit()
-
 	window, err := sdl.CreateWindow("test", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, ScreenWidth, ScreenHeight, sdl.WINDOW_OPENGL)
+
 	if err != nil {
 		fmt.Println("Initializing window:", err)
-		return
+		panic(err)
 	}
-	defer window.Destroy()
 
 	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
 	if err != nil {
 		fmt.Println("Initializing renderer:", err)
-		return
+		panic(err)
 	}
+
+	return window, renderer
+}
+
+func main() {
+	window, renderer := initSDL()
+	defer sdl.Quit()
+	defer window.Destroy()
 	defer renderer.Destroy()
 
-	var boids []src.Boid
+	rand.Seed(time.Now().UTC().UnixNano())
 
-	initializeBoids(&boids, nBoids)
+	var world = &src.World{
+		OriginPoint: src.Vector{X: ScreenWidth, Y: ScreenHeight}.Multiply(0.5),
+		Size:        src.Vector{ScreenWidth, ScreenHeight},
+		Elements:    &[]src.Element{},
+	}
+
+	// Add boids
+	nBoids := 2
+	for i := 0; i < nBoids; i++ {
+		*world.Elements = append(*world.Elements, *src.NewBoid(renderer, world))
+	}
 
 	running := true
 	for running {
-		renderer.SetDrawColor(147, 172, 207, 255)
-		renderer.Clear()
-
-		draw_boids(renderer, boids)
-
-		renderer.Present()
-
-		boids = update_boids(boids)
-
-		sdl.Delay(100)
+		Draw(renderer, *world.Elements)
+		Update(world.Elements)
 
 		handleEvents(&running)
+		sdl.Delay(100)
 	}
+}
+
+func Update(boids *[]src.Element) {
+	for i := range *boids {
+		_ = (*boids)[i].Update()
+
+		fmt.Printf("velocity: %s\n", (*boids)[i].Velocity.ToString())
+	}
+
+	for _, b := range *boids {
+		b.Position = b.Position.Add(b.Velocity)
+	}
+
+}
+
+func Draw(renderer *sdl.Renderer, elements []src.Element) {
+	drawWorld(renderer)
+	for i := range elements {
+		elements[i].Draw(renderer)
+	}
+	renderer.Present()
+}
+
+func drawWorld(renderer *sdl.Renderer) {
+	renderer.SetDrawColor(147, 172, 207, 255)
+	renderer.Clear()
+
+	renderer.SetDrawColor(0, 255, 0, 255)
+	renderer.DrawLine(ScreenHeight/2, 0, ScreenHeight/2, ScreenWidth)
+	renderer.DrawLine(0, ScreenWidth/2, ScreenWidth, ScreenWidth/2)
+
 }
 
 func handleEvents(running *bool) {
@@ -81,29 +109,5 @@ func handleEvents(running *bool) {
 			break
 
 		}
-	}
-}
-
-func update_boids(boids []src.Boid) []src.Boid {
-	var nextBoids []src.Boid
-	nBoids := len(boids)
-	for i := 0; i < nBoids; i++ {
-		nextBoid := boids[i]
-		// TODO Learn how to implement the strategy pattern in Go
-		nextBoid.Velocity = nextBoid.Velocity.Add(src.Rule01(i, boids))
-		nextBoid.Velocity = nextBoid.Velocity.Add(src.Rule02(i, boids))
-		nextBoid.Velocity = nextBoid.Velocity.Add(src.Rule03(i, boids))
-		nextBoid.Velocity = nextBoid.Velocity.Add(src.Rule04(i, boids))
-		nextBoid.Velocity = nextBoid.Velocity.Add(src.Rule05(i, boids))
-
-		nextBoid.Position = nextBoid.Position.Add(nextBoid.Velocity)
-		nextBoids = append(nextBoids, nextBoid)
-	}
-	return nextBoids
-}
-
-func draw_boids(renderer *sdl.Renderer, boids []src.Boid) {
-	for i := range boids {
-		boids[i].Draw(renderer, ScreenWidth, ScreenHeight)
 	}
 }

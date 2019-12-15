@@ -1,11 +1,6 @@
 package src
 
-import (
-	"fmt"
-	"math"
-	"testing"
-)
-
+/*
 func TestRule01(t *testing.T) {
 	var boids []Boid
 	angle := 0.0
@@ -31,3 +26,4 @@ func TestRule01(t *testing.T) {
 		t.Error(`Rule did not calculate the velocity to fly to the C of M, v.X:`, v.toString())
 	}
 }
+*/
