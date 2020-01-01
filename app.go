@@ -8,16 +8,16 @@ import (
 )
 
 const (
-	ScreenWidth  = 800
-	ScreenHeight = 800
+	ScreenWidth  = 1000
+	ScreenHeight = 1000
 )
 
 func initializeBoids(b *[]src.Boid, nBoids int) {
 	for i := 0; i < nBoids; i++ {
 		*b = append(*b, src.Boid{
 			Position: src.Vector{
-				X: float64(rand.Uint32() % ScreenWidth),
-				Y: float64(rand.Uint32() % ScreenHeight),
+				X: float64(rand.Uint32() % 50),
+				Y: float64(rand.Uint32() % 50),
 			},
 			Velocity: src.Vector{},
 		})
@@ -25,7 +25,7 @@ func initializeBoids(b *[]src.Boid, nBoids int) {
 }
 
 func main() {
-	nBoids := 30
+	nBoids := 7
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		fmt.Println("Initializing SDL:", err)
 		return
@@ -59,9 +59,9 @@ func main() {
 
 		renderer.Present()
 
-		boids = update_boids(boids)
+		update_boids(&boids)
 
-		sdl.Delay(100)
+		sdl.Delay(50)
 
 		handleEvents(&running)
 	}
@@ -84,26 +84,37 @@ func handleEvents(running *bool) {
 	}
 }
 
-func update_boids(boids []src.Boid) []src.Boid {
-	var nextBoids []src.Boid
-	nBoids := len(boids)
+func update_boids(boids *[]src.Boid) {
+	nBoids := len(*boids)
 	for i := 0; i < nBoids; i++ {
-		nextBoid := boids[i]
-		// TODO Learn how to implement the strategy pattern in Go
-		nextBoid.Velocity = nextBoid.Velocity.Add(src.Rule01(i, boids))
-		nextBoid.Velocity = nextBoid.Velocity.Add(src.Rule02(i, boids))
-		nextBoid.Velocity = nextBoid.Velocity.Add(src.Rule03(i, boids))
-		nextBoid.Velocity = nextBoid.Velocity.Add(src.Rule04(i, boids))
-		nextBoid.Velocity = nextBoid.Velocity.Add(src.Rule05(i, boids))
-
-		nextBoid.Position = nextBoid.Position.Add(nextBoid.Velocity)
-		nextBoids = append(nextBoids, nextBoid)
+		(*boids)[i].UpdateVelocity(*boids)
 	}
-	return nextBoids
+
+	for i := 0; i < nBoids; i++ {
+		(*boids)[i].UpdatePosition()
+	}
 }
 
 func draw_boids(renderer *sdl.Renderer, boids []src.Boid) {
 	for i := range boids {
 		boids[i].Draw(renderer, ScreenWidth, ScreenHeight)
 	}
+}
+
+func stats(boids []src.Boid) string {
+	var min, max, ave float64
+
+	min = boids[0].Velocity.Magnitude()
+	for _, b := range boids {
+		s := b.Velocity.Magnitude()
+		if min > s {
+			min = s
+		}
+		if max < s {
+			max = s
+		}
+		ave = ave + s
+	}
+	ave = ave / float64(len(boids))
+	return fmt.Sprintf("min: %f ave: %f  max: %f", min, ave, max)
 }

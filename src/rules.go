@@ -1,48 +1,62 @@
 package src
 
-func Rule01(j int, b []Boid) Vector {
+import "fmt"
+
+func NCohesionRule(b *Boid, bs Boids) Vector {
 	// fly to the center of mass
-	return CentreOfFlock(b).Subtract(b[j].Position).Multiply(1.0 / 100.0)
+	return CentreOfFlock(bs).Subtract(b.Position).Multiply(0.05)
 }
 
-func Rule02(j int, b []Boid) Vector {
-	// keep a minimum distance between boids
+func SeparationRule(b *Boid, bs Boids) Vector {
 	var c Vector
-	for i := range b {
-		if i != j {
-			if 300 > Distance(b[j].Position, b[i].Position) {
-				c = c.Subtract(b[i].Position.Subtract(b[j].Position).Multiply(0.5))
+	for _, ob := range bs {
+		if ob != *b {
+			d := Distance(b.Position, ob.Position)
+			if d < 10 {
+				c = c.Subtract(b.Position.Subtract(ob.Position)).Multiply(2.0)
 			}
 		}
 	}
 	return c
 }
 
-func Rule03(j int, b []Boid) Vector {
+func AlignmentRule(b *Boid, bs Boids) Vector {
 	// Boids try to match velocity with near boids.
 	var pvj Vector
-	for i := range b {
-		if i != j {
-			pvj = pvj.Add(b[i].Velocity)
+	for i := range bs {
+		if &bs[i] != b {
+			pvj = pvj.Add(bs[i].Velocity)
 		}
 	}
-	pvj = pvj.Multiply(1.0 / float64(len(b)-1))
+	pvj = pvj.Multiply(1.0 / float64(len(bs)-1))
 
-	return pvj.Subtract(b[j].Velocity).Multiply(0.25)
+	return pvj.Subtract(b.Velocity).Multiply(0.01)
 }
 
-func Rule04(j int, b []Boid) Vector {
+func HomeRule(b *Boid, _ Boids) Vector {
 	// Tendency towards a particular place
 	place := Vector{0, 0}
-	return place.Subtract(b[j].Position.Multiply(1.0 / 10))
+	return place.Subtract(b.Position.Multiply(0.0050))
 }
 
-func Rule05(j int, b []Boid) Vector {
+func LimitSpeedRule(b *Boid, _ Boids) Vector {
 	// Limiting the speed
-	s_max := 260.0
-	s_current := b[j].Velocity.Magnitude()
-	if s_current > s_max {
-		return b[j].Velocity.Unit().Multiply(s_max - s_current)
+	maxSpeed := 20.0
+	currentSpeed := b.Velocity.Magnitude()
+	if currentSpeed > maxSpeed {
+		return b.Velocity.Unit().Multiply(0.01 * (maxSpeed - currentSpeed))
+	}
+	return Vector{0.0, 0.0}
+}
+
+func MinimumSpeedRule(b *Boid, _ Boids) Vector {
+	minSpeed := 5.0
+	currentSpeed := b.Velocity.Magnitude()
+
+	if currentSpeed < minSpeed {
+		ds := minSpeed - currentSpeed
+		fmt.Printf("ds: %f\n", ds)
+		return b.Velocity.Unit().Multiply(1.0 * ds)
 	}
 	return Vector{0.0, 0.0}
 }
