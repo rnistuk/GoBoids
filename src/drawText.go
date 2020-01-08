@@ -11,7 +11,7 @@ func DrawTextInRect(r *sdl.Renderer, font *ttf.Font, txt string, rect sdl.Rect) 
 	var solidSurface *sdl.Surface
 	var solidTexture *sdl.Texture
 
-	if solidSurface, err = font.RenderUTF8Solid(txt, sdl.Color{255, 255, 0, 255}); err != nil {
+	if solidSurface, err = font.RenderUTF8Solid(txt, sdl.Color{R: 255, G: 255, A: 255}); err != nil {
 		fmt.Printf("Failed to render text: %s\n", err)
 	}
 
@@ -20,6 +20,6 @@ func DrawTextInRect(r *sdl.Renderer, font *ttf.Font, txt string, rect sdl.Rect) 
 	}
 
 	solidSurface.Free()
-	r.Copy(solidTexture, nil, &rect)
+	_ = r.Copy(solidTexture, nil, &rect)
 	defer solidTexture.Destroy()
 }

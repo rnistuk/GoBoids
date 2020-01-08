@@ -3,21 +3,21 @@ package src
 var Parameters = map[string]float64{
 	"near":       20.0,
 	"cohesion":   0.005,
-	"separation": 1.0,
+	"separation": 10.0,
 	"alignment":  0.01,
 	"home":       0.001,
-	"minSpeed":   10.0,
-	"maxSpeed":   20.0,
+	"minSpeed":   5.0,
+	"maxSpeed":   15.0,
 }
 
 func NCohesionRule(b *Boid, bs Boids) Vector {
-	fbs := FilterSortedByDistance(bs, Parameters["near"])
+	fbs := FilterSortedByDistance(*b, bs, Parameters["near"])
 	return CentreOfFlock(fbs).Subtract(b.Position).Multiply(Parameters["cohesion"])
 }
 
 func SeparationRule(b *Boid, bs Boids) Vector {
 	var c Vector
-	for _, ob := range FilterSortedByDistance(bs, Parameters["near"]) {
+	for _, ob := range FilterSortedByDistance(*b, bs, Parameters["near"]) {
 		if ob != *b {
 			d := Distance(b.Position, ob.Position)
 			if d < 10 {
@@ -32,7 +32,7 @@ func AlignmentRule(b *Boid, bs Boids) Vector {
 	// Boids try to match velocity with near boids.
 	var pvj Vector
 
-	for i := range FilterSortedByDistance(bs, Parameters["near"]) {
+	for i := range FilterSortedByDistance(*b, bs, Parameters["near"]) {
 		if &bs[i] != b {
 			pvj = pvj.Add(bs[i].Velocity)
 		}
@@ -53,7 +53,7 @@ func LimitSpeedRule(b *Boid, _ Boids) Vector {
 	maxSpeed := Parameters["maxSpeed"]
 	currentSpeed := b.Velocity.Magnitude()
 	if currentSpeed > maxSpeed {
-		return b.Velocity.Unit().Multiply(0.01 * (maxSpeed - currentSpeed))
+		return b.Velocity.Unit().Multiply(0.5 * (maxSpeed - currentSpeed))
 	}
 	return Vector{0.0, 0.0}
 }

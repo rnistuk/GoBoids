@@ -72,7 +72,7 @@ func TestVector_Unit(t *testing.T) {
 func TestVector_Multiply(t *testing.T) {
 	sut := Vector{0.0, 0.0}.Multiply(5.0)
 	if math.Abs(sut.Magnitude()) > smallFloat {
-		t.Error(`Magnitude of zero vector muliplied by 5.0 must be zero`)
+		t.Error(`Magnitude of zero vector multiplied by 5.0 must be zero`)
 	}
 
 	sut = Vector{37.4525, 79.32487392}.Unit()
@@ -87,7 +87,7 @@ func TestVector_Subtract(t *testing.T) {
 	sutB := Vector{0.0, 0.0}
 
 	if sutA.Subtract(sutB).Magnitude() > smallFloat {
-		t.Error(`Magnitude of zero vector subtracted fomr zero vector must be zero`)
+		t.Error(`Magnitude of zero vector subtracted from zero vector must be zero`)
 	}
 
 	sutB = Vector{3.0, 4.0}

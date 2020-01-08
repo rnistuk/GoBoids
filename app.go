@@ -60,8 +60,8 @@ func Setup() (*sdl.Window, *sdl.Renderer) {
 
 func ShutDown(window *sdl.Window, renderer *sdl.Renderer) {
 	sdl.Quit()
-	window.Destroy()
-	renderer.Destroy()
+	_ = window.Destroy()
+	_ = renderer.Destroy()
 	ttf.Quit()
 }
 
@@ -127,8 +127,8 @@ func handleEvents(e src.EventMapType, running *bool) {
 }
 
 func drawBackground(r *sdl.Renderer) {
-	r.SetDrawColor(147, 172, 207, 255)
-	r.Clear()
+	_ = r.SetDrawColor(147, 172, 207, 255)
+	_ = r.Clear()
 }
 
 func drawBoids(renderer *sdl.Renderer, boids []src.Boid) {
@@ -138,9 +138,9 @@ func drawBoids(renderer *sdl.Renderer, boids []src.Boid) {
 }
 
 func drawUI(r *sdl.Renderer) {
-	r.SetDrawColor(0, 0, 0, 255)
+	_ = r.SetDrawColor(0, 0, 0, 255)
 
-	r.DrawRect(&OpenUIButtonRect)
+	_ = r.DrawRect(&OpenUIButtonRect)
 
 	if UIIsOpen {
 		var font *ttf.Font
@@ -148,12 +148,12 @@ func drawUI(r *sdl.Renderer) {
 		if font, err = ttf.OpenFont("Verdana.ttf", 90); err != nil {
 			fmt.Printf("Failed to open font: %s\n", err)
 		}
-		src.DrawTextInRect(r, font, fmt.Sprintf(" - Near + : %v", src.Parameters["near"]), sdl.Rect{0, 0, 190, 53})
+		src.DrawTextInRect(r, font, fmt.Sprintf(" - Near + : %v", src.Parameters["near"]), sdl.Rect{W: 0, X: 190, H: 0, Y: 53})
 
-		r.SetDrawColor(0, 0, 0, 255)
-		r.DrawRect(&OpenUIPaneRect)
-		r.DrawRect(&IncRangeButtonRect)
-		r.DrawRect(&DecRangeButtonRect)
+		_ = r.SetDrawColor(0, 0, 0, 255)
+		_ = r.DrawRect(&OpenUIPaneRect)
+		_ = r.DrawRect(&IncRangeButtonRect)
+		_ = r.DrawRect(&DecRangeButtonRect)
 	}
 }
 
