@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/goboids/src"
 	"github.com/veandco/go-sdl2/sdl"
+	"github.com/veandco/go-sdl2/ttf"
 	"math/rand"
 )
 
@@ -12,8 +13,16 @@ const (
 	ScreenHeight = 1000
 )
 
-func initializeBoids(b *[]src.Boid, nBoids int) {
-	for i := 0; i < nBoids; i++ {
+var (
+	OpenUIButtonRect   = sdl.Rect{X: 0, Y: 0, W: 10, H: 10}
+	OpenUIPaneRect     = sdl.Rect{X: 0, Y: 0, W: ScreenWidth / 5, H: ScreenHeight}
+	DecRangeButtonRect = sdl.Rect{X: 5, Y: 20, W: 20, H: 20}
+	IncRangeButtonRect = sdl.Rect{X: 95, Y: 20, W: 20, H: 20}
+	UIIsOpen           = false
+)
+
+func initializeBoids(b *[]src.Boid, n int) {
+	for i := 0; i < n; i++ {
 		*b = append(*b, src.Boid{
 			Position: src.Vector{
 				X: float64(rand.Uint32() % 50),
@@ -24,67 +33,131 @@ func initializeBoids(b *[]src.Boid, nBoids int) {
 	}
 }
 
-func main() {
-	nBoids := 7
-	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
+func Setup() (*sdl.Window, *sdl.Renderer) {
+	var window *sdl.Window
+	var renderer *sdl.Renderer
+	var err error
+	if err = sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		fmt.Println("Initializing SDL:", err)
-		return
 	}
-	defer sdl.Quit()
 
-	window, err := sdl.CreateWindow("test", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, ScreenWidth, ScreenHeight, sdl.WINDOW_OPENGL)
+	window, err = sdl.CreateWindow("test", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, ScreenWidth, ScreenHeight, sdl.WINDOW_OPENGL)
 	if err != nil {
 		fmt.Println("Initializing window:", err)
-		return
 	}
-	defer window.Destroy()
 
-	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
+	renderer, err = sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
 	if err != nil {
 		fmt.Println("Initializing renderer:", err)
-		return
 	}
-	defer renderer.Destroy()
 
-	var boids []src.Boid
-
-	initializeBoids(&boids, nBoids)
-
-	running := true
-	for running {
-		renderer.SetDrawColor(147, 172, 207, 255)
-		renderer.Clear()
-
-		draw_boids(renderer, boids)
-
-		renderer.Present()
-
-		update_boids(&boids)
-
-		sdl.Delay(50)
-
-		handleEvents(&running)
+	if err = ttf.Init(); err != nil {
+		fmt.Printf("Failed to initialize TTF: %s\n", err)
 	}
+
+	return window, renderer
 }
 
-func handleEvents(running *bool) {
-	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+func ShutDown(window *sdl.Window, renderer *sdl.Renderer) {
+	sdl.Quit()
+	window.Destroy()
+	renderer.Destroy()
+	ttf.Quit()
+}
 
+func main() {
+	window, renderer := Setup()
+
+	if window != nil && renderer != nil {
+		var boids []src.Boid
+		buttonEvents := src.EventMapType{}
+
+		initializeBoids(&boids, 30)
+
+		buttonEvents.AddButton(OpenUIButtonRect, func() { UIIsOpen = !UIIsOpen })
+		buttonEvents.AddButton(IncRangeButtonRect, func() { src.Parameters["near"] = src.Parameters["near"] + 1 })
+		buttonEvents.AddButton(DecRangeButtonRect, func() { src.Parameters["near"] = src.Parameters["near"] - 1 })
+
+		running := true
+		for running {
+			drawBackground(renderer)
+
+			drawUI(renderer)
+
+			drawBoids(renderer, boids)
+
+			renderer.Present()
+
+			updateBoids(&boids)
+
+			handleEvents(buttonEvents, &running)
+
+			sdl.Delay(50)
+		}
+	}
+
+	ShutDown(window, renderer)
+}
+
+func handleEvents(e src.EventMapType, running *bool) {
+	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 		switch event.(type) {
 		case *sdl.QuitEvent:
-			println("Quit")
+			println("Quitting")
 			*running = false
 			break
+
 		case *sdl.MouseButtonEvent:
-			x, y, state := sdl.GetMouseState()
-			fmt.Printf("event: %d %d %d\n", x, y, state)
+			var pt sdl.Point
+			var state uint32
+			pt.X, pt.Y, state = sdl.GetMouseState()
+
+			if state == 4 {
+				e.FireEvent(pt)
+				fmt.Printf("MouseButtonEvent: %d %d %d\n", pt.X, pt.Y, state)
+			}
 			break
 
+		case *sdl.MouseWheelEvent:
+			x, y, state := sdl.GetMouseState()
+			fmt.Printf("MouseWheelEvent: %d %d %d\n", x, y, state)
+			break
 		}
 	}
 }
 
-func update_boids(boids *[]src.Boid) {
+func drawBackground(r *sdl.Renderer) {
+	r.SetDrawColor(147, 172, 207, 255)
+	r.Clear()
+}
+
+func drawBoids(renderer *sdl.Renderer, boids []src.Boid) {
+	for i := range boids {
+		boids[i].Draw(renderer, ScreenWidth, ScreenHeight)
+	}
+}
+
+func drawUI(r *sdl.Renderer) {
+	r.SetDrawColor(0, 0, 0, 255)
+
+	r.DrawRect(&OpenUIButtonRect)
+
+	if UIIsOpen {
+		var font *ttf.Font
+		var err error
+		if font, err = ttf.OpenFont("Verdana.ttf", 90); err != nil {
+			fmt.Printf("Failed to open font: %s\n", err)
+		}
+		src.DrawTextInRect(r, font, fmt.Sprintf(" - Near + : %v", src.Parameters["near"]), sdl.Rect{0, 0, 190, 53})
+
+		r.SetDrawColor(0, 0, 0, 255)
+		r.DrawRect(&OpenUIPaneRect)
+		r.DrawRect(&IncRangeButtonRect)
+		r.DrawRect(&DecRangeButtonRect)
+	}
+}
+
+func updateBoids(boids *[]src.Boid) {
 	nBoids := len(*boids)
 	for i := 0; i < nBoids; i++ {
 		(*boids)[i].UpdateVelocity(*boids)
@@ -93,28 +166,4 @@ func update_boids(boids *[]src.Boid) {
 	for i := 0; i < nBoids; i++ {
 		(*boids)[i].UpdatePosition()
 	}
-}
-
-func draw_boids(renderer *sdl.Renderer, boids []src.Boid) {
-	for i := range boids {
-		boids[i].Draw(renderer, ScreenWidth, ScreenHeight)
-	}
-}
-
-func stats(boids []src.Boid) string {
-	var min, max, ave float64
-
-	min = boids[0].Velocity.Magnitude()
-	for _, b := range boids {
-		s := b.Velocity.Magnitude()
-		if min > s {
-			min = s
-		}
-		if max < s {
-			max = s
-		}
-		ave = ave + s
-	}
-	ave = ave / float64(len(boids))
-	return fmt.Sprintf("min: %f ave: %f  max: %f", min, ave, max)
 }

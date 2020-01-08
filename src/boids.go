@@ -1,6 +1,9 @@
 package src
 
-import "sort"
+import (
+	"fmt"
+	"sort"
+)
 
 type Boids []Boid
 type PBoids *Boid
@@ -31,4 +34,32 @@ func SortClosest(b Boid, bs Boids) Boids {
 	bs = setTargetDistances(b, bs)
 	sort.Sort(ByDistance(bs))
 	return bs
+}
+
+func FilterSortedByDistance(bs Boids, d float64) Boids {
+	var fbs Boids
+	for _, b := range bs {
+		if b.targetDistance <= d {
+			fbs = append(fbs, b)
+		}
+	}
+	return fbs
+}
+
+func stats(boids Boids) string {
+	var min, max, ave float64
+
+	min = boids[0].Velocity.Magnitude()
+	for _, b := range boids {
+		s := b.Velocity.Magnitude()
+		if min > s {
+			min = s
+		}
+		if max < s {
+			max = s
+		}
+		ave = ave + s
+	}
+	ave = ave / float64(len(boids))
+	return fmt.Sprintf("min: %f ave: %f  max: %f", min, ave, max)
 }
