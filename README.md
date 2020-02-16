@@ -2,7 +2,7 @@
 Boids Implemented in Golang
 
 
-Based on Conrad Parker's Boids Pseudocode found at http://www.kfish.org/boids/pseudocode.html 
+Based on Conrad Parker's Pseudocode for Craig Reynolds (http://www.red3d.com/cwr/) boids found at http://www.kfish.org/boids/pseudocode.html 
 
 ## Install sdl2
 brew install sdl2
