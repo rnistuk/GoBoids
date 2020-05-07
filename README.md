@@ -3,8 +3,7 @@
 
 Boids Implemented in Golang
 
-Based 
-on [Conrad Parker's Boids Pseudo-code](http://www.kfish.org/boids/pseudocode.html) 
+Based on [Conrad Parker's Boids Pseudo-code](http://www.kfish.org/boids/pseudocode.html) 
 
 ## Getting Started
 
